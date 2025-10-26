@@ -51,11 +51,11 @@ deploy:
     - chmod 600 ~/.ssh/id_ed25519
     - DB_URL="postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@${APP_DB_HOST}:${APP_DB_PORT}/${APP_DB_NAME}?sslmode=disable"
   script:
-    - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" "sudo mkdir -p $DEPLOY_PATH && sudo mkdir -p $DEPLOY_PATH/deploy/nginx"
-    - rsync -e 'ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519' -avz --delete deploy/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/deploy/"
+    - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" "sudo -n mkdir -p $DEPLOY_PATH && sudo -n mkdir -p $DEPLOY_PATH/deploy/nginx"
+    - rsync -e 'ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519' --rsync-path="sudo -n rsync" -avz --delete deploy/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/deploy/"
     - ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" \
-        "sudo cd $DEPLOY_PATH && sudo IMAGE=$IMAGE docker compose -f deploy/docker-compose.yml pull && \
-         sudo IMAGE=$IMAGE DATABASE_URL='$DB_URL' docker compose -f deploy/docker-compose.yml up -d --remove-orphans"
+        "sudo -n env IMAGE=$IMAGE docker compose -f $DEPLOY_PATH/deploy/docker-compose.yml pull && \
+         sudo -n env IMAGE=$IMAGE DATABASE_URL='$DB_URL' docker compose -f $DEPLOY_PATH/deploy/docker-compose.yml up -d --remove-orphans"
   environment:
     name: production
     url: http://$DEPLOY_HOST
