@@ -19,7 +19,7 @@ build-image:
   script:
     - docker version
     - docker info
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin "$CI_REGISTRY"
     - docker build -t "$IMAGE_NAME:$CI_COMMIT_SHA" -t "$IMAGE_NAME:latest" .
     - docker push "$IMAGE_NAME:$CI_COMMIT_SHA"
     - docker push "$IMAGE_NAME:latest"
@@ -47,7 +47,6 @@ deploy:
     - mkdir -p ~/.ssh
     - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    # Build DB URL from components with sslmode=disable hardcoded
     - DB_URL="postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@${APP_DB_HOST}:${APP_DB_PORT}/${APP_DB_NAME}?sslmode=disable"
   script:
     - ssh -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p $DEPLOY_PATH && mkdir -p $DEPLOY_PATH/deploy/nginx"
