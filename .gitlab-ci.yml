@@ -13,10 +13,12 @@ build-image:
   image: docker:24
   services:
     - name: docker:24-dind
+      alias: docker
       command: ["--tls=false"]
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
+    - until docker info >/dev/null 2>&1; do echo "Waiting for Docker daemon..."; sleep 2; done
     - docker version
     - docker info
     - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin "$CI_REGISTRY"
